@@ -88,8 +88,6 @@ public class Controller {
                         Scene dashboard = new Scene(root);
                         Stage window = (Stage)((Node)e.getSource()).getScene().getWindow();
                         window.setScene(dashboard);
-
-
                         loginInfoText.appendText("Znaleziono uzytkownika admin\n");
                     }
 
