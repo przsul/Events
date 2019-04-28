@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane alignment="center" hgap="10" vgap="10" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="utp.Controller">
+<GridPane fx:id="rootGridPane" alignment="center" hgap="10" minHeight="-Infinity" minWidth="-Infinity" vgap="10" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="utp.Controller">
    <columnConstraints>
       <ColumnConstraints />
    </columnConstraints>
@@ -20,7 +20,7 @@
       <RowConstraints />
    </rowConstraints>
    <children>
-      <TabPane prefHeight="414.0" prefWidth="288.0" tabClosingPolicy="UNAVAILABLE">
+      <TabPane fx:id="rootTabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="506.0" prefWidth="288.0" tabClosingPolicy="UNAVAILABLE">
         <tabs>
           <Tab text="Logowanie">
             <content>
@@ -38,16 +38,22 @@
           </Tab>
           <Tab text="Rejestracja">
             <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="375.0" prefWidth="312.0">
+              <AnchorPane fx:id="registerAnchorPane" minHeight="0.0" minWidth="0.0" prefHeight="375.0" prefWidth="312.0">
                      <children>
-                        <Label layoutX="14.0" layoutY="36.0" prefHeight="21.0" prefWidth="258.0" text="Login:" />
-                        <TextField fx:id="registerLoginText" layoutX="14.0" layoutY="57.0" prefHeight="31.0" prefWidth="259.0" />
-                        <Label layoutX="14.0" layoutY="103.0" prefHeight="21.0" prefWidth="258.0" text="Hasło:" />
-                        <PasswordField fx:id="registerPasswordText" layoutX="14.0" layoutY="124.0" prefHeight="31.0" prefWidth="260.0" />
-                        <Label layoutX="14.0" layoutY="167.0" prefHeight="21.0" prefWidth="259.0" text="Powtórz hasło:" />
-                        <PasswordField fx:id="repeatPasswordText" layoutX="14.0" layoutY="188.0" prefHeight="31.0" prefWidth="259.0" />
-                        <Button fx:id="registerButton" layoutX="144.0" layoutY="244.0" mnemonicParsing="false" onAction="#onActionHandler" prefHeight="31.0" prefWidth="129.0" text="Zarejestruj" />
-                        <TextArea fx:id="registerInfoText" layoutX="14.0" layoutY="285.0" prefHeight="76.0" prefWidth="266.0" wrapText="true" />
+                        <Label layoutX="14.0" layoutY="4.0" prefHeight="21.0" prefWidth="258.0" text="Login:" />
+                        <TextField fx:id="registerLoginText" layoutX="14.0" layoutY="25.0" prefHeight="31.0" prefWidth="259.0" />
+                        <Label layoutX="16.0" layoutY="212.0" prefHeight="21.0" prefWidth="258.0" text="Hasło:" />
+                        <PasswordField fx:id="registerPasswordText" layoutX="13.0" layoutY="234.0" prefHeight="31.0" prefWidth="260.0" />
+                        <Label layoutX="14.0" layoutY="265.0" prefHeight="21.0" prefWidth="259.0" text="Powtórz hasło:" />
+                        <PasswordField fx:id="repeatPasswordText" layoutX="16.0" layoutY="286.0" prefHeight="31.0" prefWidth="259.0" />
+                        <Button fx:id="registerButton" layoutX="146.0" layoutY="331.0" mnemonicParsing="false" onAction="#onActionHandler" prefHeight="31.0" prefWidth="129.0" text="Zarejestruj" />
+                        <TextArea fx:id="registerInfoText" layoutX="12.0" layoutY="377.0" prefHeight="76.0" prefWidth="266.0" wrapText="true" />
+                        <Label layoutX="14.0" layoutY="56.0" prefHeight="21.0" prefWidth="260.0" text="Imie:" />
+                        <TextField fx:id="firstNameText" layoutX="13.0" layoutY="77.0" prefHeight="31.0" prefWidth="261.0" />
+                        <Label layoutX="15.0" layoutY="108.0" prefHeight="21.0" prefWidth="259.0" text="Nazwisko:" />
+                        <TextField fx:id="lastNameText" layoutX="14.0" layoutY="129.0" prefHeight="31.0" prefWidth="261.0" />
+                        <Label layoutX="15.0" layoutY="160.0" prefHeight="21.0" prefWidth="261.0" text="Email:" />
+                        <TextField fx:id="emailText" layoutX="14.0" layoutY="181.0" prefHeight="31.0" prefWidth="260.0" />
                      </children>
                   </AnchorPane>
             </content>
