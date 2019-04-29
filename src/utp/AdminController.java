@@ -49,8 +49,8 @@ public class AdminController {
     private TableColumn<Event, String> columnEventTime = new TableColumn<>("Time");
 
     private TableColumn<EventSign, Long> columnEventSignId = new TableColumn<>("Id");
-    private TableColumn<EventSign, String> columnEventSignUser = new TableColumn<>("User");
-    private TableColumn<EventSign, String> columnEventSignEvent = new TableColumn<>("Event");
+    private TableColumn<EventSign, User> columnEventSignUser = new TableColumn<>("User");
+    private TableColumn<EventSign, Event> columnEventSignEvent = new TableColumn<>("Event");
     private TableColumn<EventSign, String> columnEventSignType = new TableColumn<>("Type");
     private TableColumn<EventSign, String> columnEventSignFood = new TableColumn<>("Food");
     private TableColumn<EventSign, String> columnEventSignStatus = new TableColumn<>("Status");
@@ -281,7 +281,7 @@ public class AdminController {
         columnEventSignType.setCellValueFactory(new PropertyValueFactory<>("type"));
         columnEventSignFood.setCellValueFactory(new PropertyValueFactory<>("food"));
         columnEventSignStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        eventSignData.add(new EventSign(1L,"a","b","c","d","e"));
+        eventSignData.add(new EventSign(1L,new User(), new Event(),"c","d","e"));
         tableSigned.setItems(eventSignData);
         tableSigned.setEditable(true);
         tableSigned.getColumns().setAll(columnEventSignId,columnEventSignUser,columnEventSignEvent,columnEventSignType,columnEventSignFood,columnEventSignStatus);

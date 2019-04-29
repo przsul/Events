@@ -68,29 +68,39 @@ public class Controller {
     void onActionHandler(ActionEvent e){
         if(e.getSource() == loginButton){
             try{
-                sql = "SELECT * FROM users WHERE login = ? AND password = md5(?)";
+                sql = "SELECT id,login,password,firstname,lastname,email,type FROM users WHERE login = ? AND password = md5(?)";
                 preparedStatement = conn.prepareStatement(sql);
                 preparedStatement.setString(1,loginText.getText());
                 preparedStatement.setString(2,passwordText.getText());
                 resultSet = preparedStatement.executeQuery();
                 if(resultSet.next()){
-                    if(resultSet.getString("type").equals("U"))
+                    User loggedUser = new User(
+                            resultSet.getLong(1),
+                            resultSet.getString(2),
+                            resultSet.getString(3),
+                            resultSet.getString(4),
+                            resultSet.getString(5),
+                            resultSet.getString(6),
+                            resultSet.getString(7)
+                    );
+                    FXMLLoader fxmlLoader = new FXMLLoader();
+                    if(loggedUser.getUserAccountType().equals("U"))
                     {
-                        loginInfoText.appendText("Znaleziono uzytkownika user\n");
+                        fxmlLoader.setLocation(getClass().getResource("userview.fxml"));
+                        UserController userController = new UserController();
+                        userController.setLoggedUser(loggedUser);
+                        fxmlLoader.setController(userController);
                     }
                     else{
-                        FXMLLoader fxmlLoader = new FXMLLoader();
                         fxmlLoader.setLocation(getClass().getResource("adminview.fxml"));
                         AdminController adminController = new AdminController();
-                        adminController.setUser(new User(1,"a","b","c","d","e","A"));
+                        adminController.setUser(loggedUser);
                         fxmlLoader.setController(adminController);
-                        Parent root = fxmlLoader.load();
-                        Scene dashboard = new Scene(root);
-                        Stage window = (Stage)((Node)e.getSource()).getScene().getWindow();
-                        window.setScene(dashboard);
-                        loginInfoText.appendText("Znaleziono uzytkownika admin\n");
                     }
-
+                    Parent root = fxmlLoader.load();
+                    Scene dashboard = new Scene(root);
+                    Stage window = (Stage)((Node)e.getSource()).getScene().getWindow();
+                    window.setScene(dashboard);
                 }
                 else{
                     loginInfoText.appendText("Nie znaleziono uzytkownika\n");
