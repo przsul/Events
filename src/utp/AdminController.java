@@ -12,39 +12,71 @@ import javafx.scene.control.cell.TextFieldTableCell;
 
 import java.awt.event.ActionEvent;
 import java.sql.*;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.TimeZone;
 
 public class AdminController {
     @FXML
     private TableView<User> tableUsers = new TableView<>();
     @FXML
+    private TableView<Event> tableEvents = new TableView<>();
+    @FXML
+    private TableView<EventSign> tableSigned = new TableView<>();
+    @FXML
     private Button userAdd;
     @FXML
     private Button userDelete;
+    @FXML
+    private Button eventAdd;
+    @FXML
+    private Button eventDelete;
 
-
-    private TableColumn<User,Integer> columnId = new TableColumn<>("Id");
+    private TableColumn<User,Long> columnId = new TableColumn<>("Id");
     private TableColumn<User,String> columnLogin = new TableColumn<>("Login");
     private TableColumn<User,String> columnPassword = new TableColumn<>("Password");
     private TableColumn<User,String> columnFirstName = new TableColumn<>("FirstName");
     private TableColumn<User,String> columnLastName = new TableColumn<>("LastName");
     private TableColumn<User,String> columnEmail = new TableColumn<>("Email");
     private TableColumn<User,String> columnType = new TableColumn<>("Type");
+
+    private TableColumn<Event,Long> columnEventId = new TableColumn<>("Id");
+    private TableColumn<Event,String> columnEventName = new TableColumn<>("Name");
+    private TableColumn<Event,String> columnEventAgend = new TableColumn<>("Agend");
+    private TableColumn<Event, String> columnEventTime = new TableColumn<>("Time");
+
+    private TableColumn<EventSign, Long> columnEventSignId = new TableColumn<>("Id");
+    private TableColumn<EventSign, String> columnEventSignUser = new TableColumn<>("User");
+    private TableColumn<EventSign, String> columnEventSignEvent = new TableColumn<>("Event");
+    private TableColumn<EventSign, String> columnEventSignType = new TableColumn<>("Type");
+    private TableColumn<EventSign, String> columnEventSignFood = new TableColumn<>("Food");
+    private TableColumn<EventSign, String> columnEventSignStatus = new TableColumn<>("Status");
+
+
     private User loggedUser;
 
     private static final String USERNAME = "root";
     private static final String PASSWORD = "";
-    private static final String CONN_STRING = "jdbc:mysql://localhost:3306/pwswlab05?serverTimezone=UTC";
+    private static final String CONN_STRING = "jdbc:mysql://localhost:3306/pwswlab05?serverTimezone=Europe/Warsaw&useLegacyDatetimeCode=false";
     private Connection conn;
     private String sql;
     private PreparedStatement preparedStatement;
     private ResultSet resultSet;
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
     private ObservableList<User> data = FXCollections.observableArrayList();
+    private ObservableList<Event> eventData = FXCollections.observableArrayList();
+    private ObservableList<EventSign> eventSignData = FXCollections.observableArrayList();
 
-    private void sendUpdateUserQueryCell(String string, String parameter, Long id){
+    private void sendUpdateUserQueryCell(String table,String string, String parameter, Long id){
         try {
-            sql = "UPDATE users SET " + string + " = ? WHERE id = ?";
+            sql = "UPDATE " + table + " SET " + string + " = ? WHERE id = ?";
             preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1,parameter);
+            if(table.equals("events") && string.equals("time")) preparedStatement.setTimestamp(1,
+                    Timestamp.valueOf(LocalDateTime.parse(parameter,formatter)));
+            else preparedStatement.setString(1,parameter);
             preparedStatement.setLong(2,id);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -71,11 +103,38 @@ public class AdminController {
             e.printStackTrace();
         }
     }
+    private void sendInsertEventQueryCell(Event event){
+        try {
+            sql = "INSERT INTO events (name, agend, time)" +
+                    "VALUES (?, ?, ?)";
+            PreparedStatement preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS) ;
+            preparedStatement.setString(1,event.getName());
+            preparedStatement.setString(2,event.getAgend());
+            preparedStatement.setTimestamp(3,Timestamp.valueOf(LocalDateTime.parse(event.getTime(),formatter)));
+            preparedStatement.executeUpdate();
+            resultSet = preparedStatement.getGeneratedKeys();
+            if(resultSet.next()){
+                event.setEventId(resultSet.getInt(1));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
     private void sendDeleteUserQueryCell(User user){
         try {
             sql = "DELETE FROM users WHERE id = ?";
             PreparedStatement preparedStatement = conn.prepareStatement(sql) ;
             preparedStatement.setLong(1,user.getUserId());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    private void sendDeleteEventQueryCell(Event event){
+        try {
+            sql = "DELETE FROM events WHERE id = ?";
+            PreparedStatement preparedStatement = conn.prepareStatement(sql) ;
+            preparedStatement.setLong(1,event.getEventId());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -101,6 +160,23 @@ public class AdminController {
             System.err.println(e);
         }
     }
+    private void reloadTableEvent(){
+        try {
+            eventData.clear();;
+            sql = "SELECT id, name, agend, time FROM events";
+            preparedStatement = conn.prepareStatement(sql);
+            resultSet = preparedStatement.executeQuery();
+            while(resultSet.next()){
+                eventData.add(new Event(resultSet.getLong(1),
+                        resultSet.getString(2),
+                        resultSet.getString(3),
+                        resultSet.getTimestamp(4).toLocalDateTime().format(formatter)));
+            }
+            tableEvents.setItems(eventData);
+        }catch (Exception e){
+            System.err.println(e);
+        }
+    }
     public void setUser(User x){
         this.loggedUser = x;
     }
@@ -113,7 +189,7 @@ public class AdminController {
             t.getTableView().getItems().get(
                     t.getTablePosition().getRow())
                     .setUserLogin(t.getNewValue());
-            sendUpdateUserQueryCell("login",t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserLogin(),
+            sendUpdateUserQueryCell("users","login",t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserLogin(),
                     t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserId());
                 });
         columnPassword.setCellValueFactory(new PropertyValueFactory<>("userPassword"));
@@ -122,7 +198,7 @@ public class AdminController {
             t.getTableView().getItems().get(
                     t.getTablePosition().getRow())
                     .setUserPassword(t.getNewValue());
-            sendUpdateUserQueryCell("password",t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserPassword(),
+            sendUpdateUserQueryCell("users","password",t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserPassword(),
                     t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserId());
         });
         columnFirstName.setCellValueFactory(new PropertyValueFactory<>("userFirstName"));
@@ -131,7 +207,7 @@ public class AdminController {
             t.getTableView().getItems().get(
                     t.getTablePosition().getRow())
                     .setUserFirstName(t.getNewValue());
-            sendUpdateUserQueryCell("firstname",t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserFirstName(),
+            sendUpdateUserQueryCell("users","firstname",t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserFirstName(),
                     t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserId());
         });
         columnLastName.setCellValueFactory(new PropertyValueFactory<>("userLastName"));
@@ -140,7 +216,7 @@ public class AdminController {
             t.getTableView().getItems().get(
                     t.getTablePosition().getRow())
                     .setUserLastName(t.getNewValue());
-            sendUpdateUserQueryCell("lastname",t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserLastName(),
+            sendUpdateUserQueryCell("users","lastname",t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserLastName(),
                     t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserId());
         });
         columnEmail.setCellValueFactory(new PropertyValueFactory<>("userEmail"));
@@ -149,7 +225,7 @@ public class AdminController {
             t.getTableView().getItems().get(
                     t.getTablePosition().getRow())
                     .setUserEmail(t.getNewValue());
-            sendUpdateUserQueryCell("email",t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserEmail(),
+            sendUpdateUserQueryCell("users","email",t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserEmail(),
                     t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserId());
         });
         columnType.setCellValueFactory(new PropertyValueFactory<>("userAccountType"));
@@ -158,23 +234,70 @@ public class AdminController {
             t.getTableView().getItems().get(
                     t.getTablePosition().getRow())
                     .setUserAccountType(t.getNewValue());
-            sendUpdateUserQueryCell("type",t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserAccountType(),
+            sendUpdateUserQueryCell("users","type",t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserAccountType(),
                     t.getTableView().getItems().get(t.getTablePosition().getRow()).getUserId());
         });
         tableUsers.getColumns().setAll(columnId,columnLogin,columnPassword,columnFirstName,columnLastName,columnEmail,columnType);
         tableUsers.setEditable(true);
+        //Kolumny Event
+        columnEventId.setCellValueFactory(new PropertyValueFactory<>("eventId"));
+        columnEventName.setCellValueFactory(new PropertyValueFactory<>("name"));
+        columnEventName.setCellFactory(TextFieldTableCell.<Event>forTableColumn());
+        columnEventName.setOnEditCommit((TableColumn.CellEditEvent<Event,String> t) -> {
+            t.getTableView().getItems().get(
+                    t.getTablePosition().getRow())
+                    .setName(t.getNewValue());
+            sendUpdateUserQueryCell("events", "name",t.getTableView().getItems().get(t.getTablePosition().getRow()).getName(),
+                    t.getTableView().getItems().get(t.getTablePosition().getRow()).getEventId());
+        });
+        columnEventAgend.setCellValueFactory(new PropertyValueFactory<>("agend"));
+        columnEventAgend.setCellFactory(TextFieldTableCell.<Event>forTableColumn());
+        columnEventAgend.setOnEditCommit((TableColumn.CellEditEvent<Event,String> t) -> {
+            t.getTableView().getItems().get(
+                    t.getTablePosition().getRow())
+                    .setAgend(t.getNewValue());
+            sendUpdateUserQueryCell("events", "agend",t.getTableView().getItems().get(t.getTablePosition().getRow()).getAgend(),
+                    t.getTableView().getItems().get(t.getTablePosition().getRow()).getEventId());
+        });
+        columnEventTime.setCellValueFactory(new PropertyValueFactory<>("time"));
+        columnEventTime.setCellFactory(TextFieldTableCell.<Event>forTableColumn());
+        columnEventTime.setOnEditCommit((TableColumn.CellEditEvent<Event,String> t) -> {
+            if(t.getNewValue().matches("[0-9]{2}-[0-9]{2}-[0-9]{4} [0-9]{2}:[0-9]{2}")){
+                t.getTableView().getItems().get(
+                        t.getTablePosition().getRow())
+                        .setTime(t.getNewValue());
+                sendUpdateUserQueryCell("events", "time",t.getTableView().getItems().get(t.getTablePosition().getRow()).getTime(),
+                        t.getTableView().getItems().get(t.getTablePosition().getRow()).getEventId());
+            }
+
+        });
+        tableEvents.getColumns().setAll(columnEventId,columnEventName,columnEventAgend,columnEventTime);
+        tableEvents.setItems(eventData);
+        tableEvents.setEditable(true);
+        //SignEvent
+        columnEventSignId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        columnEventSignUser.setCellValueFactory(new PropertyValueFactory<>("user"));
+        columnEventSignEvent.setCellValueFactory(new PropertyValueFactory<>("event"));
+        columnEventSignType.setCellValueFactory(new PropertyValueFactory<>("type"));
+        columnEventSignFood.setCellValueFactory(new PropertyValueFactory<>("food"));
+        columnEventSignStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        eventSignData.add(new EventSign(1L,"a","b","c","d","e"));
+        tableSigned.setItems(eventSignData);
+        tableSigned.setEditable(true);
+        tableSigned.getColumns().setAll(columnEventSignId,columnEventSignUser,columnEventSignEvent,columnEventSignType,columnEventSignFood,columnEventSignStatus);
 
         conn = null;
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             conn = DriverManager.getConnection(CONN_STRING,USERNAME,PASSWORD);
             reloadTableUser();
+            reloadTableEvent();
         }catch (Exception e){
             System.err.println(e);
         }
         //Obsluga przycisku dodaj - uzytkownika
         userAdd.setOnAction((event -> {
-            User newUser = new User(data.get(data.size()-1).getUserId()+1,"Nowy","Nowy","Nowy","Nowy","Nowy", "U");
+            User newUser = new User(0,"Nowy","Nowy","Nowy","Nowy","Nowy", "U");
             sendInsertUserQueryCell(newUser);
             data.add(newUser);
         }));
@@ -184,6 +307,16 @@ public class AdminController {
             sendDeleteUserQueryCell(userToDelete);
             data.remove(userToDelete);
         }));
+        eventAdd.setOnAction((event -> {
+            Event newEvent = new Event(0,"Nowy","Nowy", LocalDateTime.now().format(formatter));
+            sendInsertEventQueryCell(newEvent);
+            eventData.add(newEvent);
+        }));
+        eventDelete.setOnAction(event -> {
+            Event eventToDelete = tableEvents.getSelectionModel().getSelectedItem();
+            sendDeleteEventQueryCell(eventToDelete);
+            eventData.remove(eventToDelete);
+        });
 
     }
 

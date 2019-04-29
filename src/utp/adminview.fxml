@@ -6,11 +6,16 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="701.0" tabClosingPolicy="UNAVAILABLE" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.171">
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="701.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
   <tabs>
     <Tab text="Wydarzenia">
       <content>
-        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+               <children>
+                  <TableView fx:id="tableEvents" layoutX="14.0" layoutY="24.0" prefHeight="200.0" prefWidth="673.0" />
+                  <Button fx:id="eventAdd" layoutX="14.0" layoutY="258.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="142.0" text="Dodaj" />
+                  <Button fx:id="eventDelete" layoutX="533.0" layoutY="258.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="150.0" text="Usuń" />
+               </children></AnchorPane>
       </content>
     </Tab>
     <Tab text="Uzytkownicy">
@@ -25,7 +30,12 @@
     </Tab>
       <Tab text="Zapisy">
         <content>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+               <children>
+                  <TableView fx:id="signedTable" editable="true" layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="672.0" />
+                  <Button fx:id="signedAccept" layoutX="14.0" layoutY="248.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="148.0" text="Potwierdz" />
+                  <Button fx:id="signedDecline" layoutX="544.0" layoutY="248.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="146.0" text="Odrzuc" />
+               </children></AnchorPane>
         </content>
       </Tab>
   </tabs>
