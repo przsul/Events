@@ -34,6 +34,10 @@ public class AdminController {
     private Button eventAdd;
     @FXML
     private Button eventDelete;
+    @FXML
+    private Button signedDecline;
+    @FXML
+    private Button signedAccept;
 
     private TableColumn<User,Long> columnId = new TableColumn<>("Id");
     private TableColumn<User,String> columnLogin = new TableColumn<>("Login");
@@ -48,7 +52,6 @@ public class AdminController {
     private TableColumn<Event,String> columnEventAgend = new TableColumn<>("Agend");
     private TableColumn<Event, String> columnEventTime = new TableColumn<>("Time");
 
-    private TableColumn<EventSign, Long> columnEventSignId = new TableColumn<>("Id");
     private TableColumn<EventSign, User> columnEventSignUser = new TableColumn<>("User");
     private TableColumn<EventSign, Event> columnEventSignEvent = new TableColumn<>("Event");
     private TableColumn<EventSign, String> columnEventSignType = new TableColumn<>("Type");
@@ -60,7 +63,7 @@ public class AdminController {
 
     private static final String USERNAME = "root";
     private static final String PASSWORD = "";
-    private static final String CONN_STRING = "jdbc:mysql://localhost:3306/pwswlab05?serverTimezone=Europe/Warsaw&useLegacyDatetimeCode=false";
+    private static final String CONN_STRING = "jdbc:mysql://localhost:3306/pwswlab05?serverTimezone=Europe/Warsaw&useLegacyDatetimeCode=false&useUnicode=true&characterEncoding=utf-8";
     private Connection conn;
     private String sql;
     private PreparedStatement preparedStatement;
@@ -177,6 +180,48 @@ public class AdminController {
             System.err.println(e);
         }
     }
+    private void reloadTableSignedEvent(){
+
+        try {
+            eventSignData.clear();
+            sql = "SELECT users.id,users.login,users.password,users.firstname,users.lastname,users.email,users.type,events.id,events.name,events.agend,events.time,users_events.type,users_events.food,users_events.status FROM users INNER JOIN users_events ON users.id = users_events.id_user INNER JOIN events ON users_events.id_event = events.id";
+            preparedStatement = conn.prepareStatement(sql);
+            resultSet = preparedStatement.executeQuery();
+            while(resultSet.next()){
+                User user = new User(resultSet.getLong(1),
+                        resultSet.getString(2),
+                        resultSet.getString(3),
+                        resultSet.getString(4),
+                        resultSet.getString(5),
+                        resultSet.getString(6),
+                        resultSet.getString(7)
+                        );
+                Event event = new Event(
+                        resultSet.getLong(8),
+                        resultSet.getString(9),
+                        resultSet.getString(10),
+                        resultSet.getTimestamp(11).toLocalDateTime().format(formatter)
+                );
+
+                eventSignData.add(new EventSign(user,event,resultSet.getString(12),resultSet.getString(13),resultSet.getString(14)));
+            }
+            tableEvents.setItems(eventData);
+        }catch (Exception e){
+            System.err.println(e);
+        }
+    }
+    private void setEventSignedStatus(String status,User user, Event event){
+        try {
+            sql = "UPDATE users_events SET status = ? WHERE id_user = ? AND id_event = ?";
+            preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.setString(1, status);
+            preparedStatement.setLong(2,user.getUserId());
+            preparedStatement.setLong(3,event.getEventId());
+            preparedStatement.executeUpdate();
+        }catch (Exception e){
+            System.err.println(e);
+        }
+    }
     public void setUser(User x){
         this.loggedUser = x;
     }
@@ -275,23 +320,21 @@ public class AdminController {
         tableEvents.setItems(eventData);
         tableEvents.setEditable(true);
         //SignEvent
-        columnEventSignId.setCellValueFactory(new PropertyValueFactory<>("id"));
         columnEventSignUser.setCellValueFactory(new PropertyValueFactory<>("user"));
         columnEventSignEvent.setCellValueFactory(new PropertyValueFactory<>("event"));
         columnEventSignType.setCellValueFactory(new PropertyValueFactory<>("type"));
         columnEventSignFood.setCellValueFactory(new PropertyValueFactory<>("food"));
         columnEventSignStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        eventSignData.add(new EventSign(1L,new User(), new Event(),"c","d","e"));
         tableSigned.setItems(eventSignData);
-        tableSigned.setEditable(true);
-        tableSigned.getColumns().setAll(columnEventSignId,columnEventSignUser,columnEventSignEvent,columnEventSignType,columnEventSignFood,columnEventSignStatus);
-
+        tableSigned.getColumns().setAll(columnEventSignUser,columnEventSignEvent,columnEventSignType,columnEventSignFood,columnEventSignStatus);
+        tableSigned.setEditable(false);
         conn = null;
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             conn = DriverManager.getConnection(CONN_STRING,USERNAME,PASSWORD);
             reloadTableUser();
             reloadTableEvent();
+            reloadTableSignedEvent();
         }catch (Exception e){
             System.err.println(e);
         }
@@ -317,7 +360,16 @@ public class AdminController {
             sendDeleteEventQueryCell(eventToDelete);
             eventData.remove(eventToDelete);
         });
-
+        signedAccept.setOnAction((event -> {
+            setEventSignedStatus("Potwierdzone", tableSigned.getSelectionModel().getSelectedItem().getUser(),
+                    tableSigned.getSelectionModel().getSelectedItem().getEvent());
+            reloadTableSignedEvent();
+        }));
+        signedDecline.setOnAction((event -> {
+            setEventSignedStatus("Odrzucone", tableSigned.getSelectionModel().getSelectedItem().getUser(),
+                    tableSigned.getSelectionModel().getSelectedItem().getEvent());
+            reloadTableSignedEvent();
+        }));
     }
 
 }

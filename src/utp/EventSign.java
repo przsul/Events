@@ -1,7 +1,6 @@
 package utp;
 
 public class EventSign {
-    private long id;
     private User user;
     private Event event;
     private String type;
@@ -11,21 +10,12 @@ public class EventSign {
     public EventSign() {
     }
 
-    public EventSign(long id, User user, Event event, String type, String food, String status) {
-        this.id = id;
+    public EventSign( User user, Event event, String type, String food, String status) {
         this.user = user;
         this.event = event;
         this.type = type;
         this.food = food;
         this.status = status;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public User getUser() {
@@ -71,7 +61,6 @@ public class EventSign {
     @Override
     public String toString() {
         return "EventSign{" +
-                "id=" + id +
                 ", user=" + user +
                 ", event=" + event +
                 ", type='" + type + '\'' +

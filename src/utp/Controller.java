@@ -45,7 +45,7 @@ public class Controller {
 
     private static final String USERNAME = "root";
     private static final String PASSWORD = "";
-    private static final String CONN_STRING = "jdbc:mysql://localhost:3306/pwswlab05?serverTimezone=UTC";
+    private static final String CONN_STRING = "jdbc:mysql://localhost:3306/pwswlab05?serverTimezone=Europe/Warsaw&useLegacyDatetimeCode=false&useUnicode=true&characterEncoding=utf-8";
     private Connection conn;
     private String sql;
     private PreparedStatement preparedStatement;
