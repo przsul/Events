@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 
 import java.sql.*;
@@ -15,20 +16,32 @@ public class UserController {
     @FXML
     private ComboBox<Event> nameEventCombo = new ComboBox<>();
     @FXML
-    private HBox hbox = new HBox();
+    private TextArea agend;
     @FXML
-    private HBox hbox2 = new HBox();
-
-    private TextArea agend = new TextArea();
-    private Label agendLabel = new Label("Agenda:");
-    private Label dateLabel = new Label("Termin:");
-    private Label userLabel = new Label("Typ uczesnictwa:");
-    private Label foodLabel = new Label("Jedzenie:");
-    private TextField date = new TextField();
-    private Button signButton = new Button("Zapisz");
-
+    private Label agendLabel;
+    @FXML
+    private Label dateLabel;
+    @FXML
+    private Label userLabel;
+    @FXML
+    private Label foodLabel;
+    @FXML
+    private TextField date;
+    @FXML
+    private Button signButton;
+    @FXML
     private ComboBox<String> userType = new ComboBox<>();
+    @FXML
     private ComboBox<String> foodType = new ComboBox<>();
+    @FXML
+    private Label infoLabel;
+    @FXML
+    private TableView<UserSignedEvents> tableSignedEvents = new TableView<>();
+
+    private TableColumn<UserSignedEvents,String> columnEventName = new TableColumn<>("Name");
+    private TableColumn<UserSignedEvents,String> columnEventAgend = new TableColumn<>("Agend");
+    private TableColumn<UserSignedEvents, String> columnEventTime = new TableColumn<>("Time:");
+    private TableColumn<UserSignedEvents, String> columnEventStatus = new TableColumn<>("Status:");
 
     private ObservableList<Event> events = FXCollections.observableArrayList();
     private ObservableList<String> userT = FXCollections.observableArrayList(
@@ -42,6 +55,7 @@ public class UserController {
             "Wegetariańskie",
             "Bez glutenu"
     );
+    private ObservableList<UserSignedEvents> userSignedEvents = FXCollections.observableArrayList();
 
 
 
@@ -84,9 +98,34 @@ public class UserController {
             preparedStatement.setString(3,userType.getSelectionModel().getSelectedItem());
             preparedStatement.setString(4,foodType.getSelectionModel().getSelectedItem());
             preparedStatement.executeUpdate();
+            infoLabel.setText("INFO: Pomyślnie zostałeś zapisany na wydarzenie");
         }
         catch(SQLIntegrityConstraintViolationException ex){
-            System.out.println("Jestes juz zapisany na to wydarzenie");
+            infoLabel.setText("INFO: Jestes juz zapisany na to wydarzenie");
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    private void getUserSignedEvents(User user){
+        try{
+            userSignedEvents.clear();
+            sql = "SELECT events.id,events.name, events.agend,events.time,users_events.status FROM events" +
+                    " INNER JOIN users_events ON events.id = users_events.id_event" +
+                    " INNER JOIN users ON users_events.id_user = users.id WHERE users.id = ?";
+            preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.setLong(1,user.getUserId());
+            resultSet = preparedStatement.executeQuery();
+            while(resultSet.next()){
+                userSignedEvents.add(new UserSignedEvents(
+                        resultSet.getLong(1),
+                        resultSet.getString(2),
+                        resultSet.getString(3),
+                        resultSet.getTimestamp(4).toLocalDateTime().format(formatter),
+                        resultSet.getString(5)));
+            }
+            tableSignedEvents.setItems(userSignedEvents);
+
         }
         catch (SQLException e) {
             e.printStackTrace();
@@ -94,42 +133,25 @@ public class UserController {
     }
     @FXML
     void initialize(){
-        agendLabel.setMaxHeight(20);
-        agendLabel.setMaxWidth(50);
-        agend.setPrefWidth(200);
-        agend.setMaxHeight(200);
-        agend.setWrapText(true);
-        agend.setTranslateY(20);
-        agend.setTranslateX(-45);
-        agend.setEditable(false);
-        dateLabel.setMaxHeight(20);
-        dateLabel.setMaxWidth(50);
-        dateLabel.setTranslateX(-35);
-        date.setMaxWidth(125);
-        date.setMaxHeight(30);
-        date.setEditable(false);
-        date.setTranslateY(20);
-        date.setTranslateX(-75);
-        userLabel.setMaxHeight(20);
-        userLabel.setMaxWidth(100);
-        userLabel.setTranslateX(-60);
+        agendLabel.setVisible(false);
+        agend.setVisible(false);
+        dateLabel.setVisible(false);
+        date.setVisible(false);
+        userLabel.setVisible(false);
+        userType.setVisible(false);
+        foodLabel.setVisible(false);
+        foodType.setVisible(false);
+        signButton.setVisible(false);
+        infoLabel.setVisible(false);
         userType.setItems(userT);
         userType.getSelectionModel().selectFirst();
-        userType.setMaxHeight(30);
-        userType.setMaxWidth(100);
-        userType.setTranslateX(-150);
-        userType.setTranslateY(20);
-        foodLabel.setMaxHeight(30);
-        foodLabel.setMaxWidth(100);
-        foodLabel.setTranslateX(-120);
-        foodLabel.setTranslateY(-5);
         foodType.setItems(food);
         foodType.getSelectionModel().selectFirst();
-        foodType.setMaxHeight(30);
-        foodType.setMaxWidth(130);
-        foodType.setTranslateX(-170);
-        foodType.setTranslateY(20);
-
+        columnEventName.setCellValueFactory(new PropertyValueFactory<>("name"));
+        columnEventAgend.setCellValueFactory(new PropertyValueFactory<>("agend"));
+        columnEventTime.setCellValueFactory(new PropertyValueFactory<>("time"));
+        columnEventStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        tableSignedEvents.getColumns().setAll(columnEventName,columnEventAgend,columnEventTime,columnEventStatus);
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             conn = DriverManager.getConnection(CONN_STRING, USERNAME, PASSWORD);
@@ -137,13 +159,20 @@ public class UserController {
             System.err.println(e);
         }
         getAllEvents();
+        getUserSignedEvents(loggedUser);
         nameEventCombo.setOnAction((event -> {
-            hbox.getChildren().clear();
-            hbox2.getChildren().clear();
+            agendLabel.setVisible(true);
+            agend.setVisible(true);
+            dateLabel.setVisible(true);
+            date.setVisible(true);
+            userLabel.setVisible(true);
+            userType.setVisible(true);
+            foodLabel.setVisible(true);
+            foodType.setVisible(true);
+            signButton.setVisible(true);
+            infoLabel.setVisible(true);
             agend.setText(nameEventCombo.getSelectionModel().getSelectedItem().getAgend());
             date.setText(nameEventCombo.getSelectionModel().getSelectedItem().getTime());
-            hbox.getChildren().setAll(agendLabel,agend,dateLabel,date,userLabel,userType,foodLabel,foodType);
-            hbox2.getChildren().setAll(signButton);
         }));
         signButton.setOnAction((event -> {
             signForEvent();
