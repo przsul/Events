@@ -3,12 +3,17 @@ package utp;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.stage.Stage;
 
 import java.awt.event.ActionEvent;
 import java.sql.*;
@@ -38,6 +43,8 @@ public class AdminController {
     private Button signedDecline;
     @FXML
     private Button signedAccept;
+    @FXML
+    private Button logoutButton;
 
     private TableColumn<User,Long> columnId = new TableColumn<>("Id");
     private TableColumn<User,String> columnLogin = new TableColumn<>("Login");
@@ -369,6 +376,19 @@ public class AdminController {
             setEventSignedStatus("Odrzucone", tableSigned.getSelectionModel().getSelectedItem().getUser(),
                     tableSigned.getSelectionModel().getSelectedItem().getEvent());
             reloadTableSignedEvent();
+        }));
+        logoutButton.setOnAction((event -> {
+            try{
+                FXMLLoader fxmlLoader = new FXMLLoader();
+                fxmlLoader.setLocation(getClass().getResource("mainview.fxml"));
+                Parent root = fxmlLoader.load();
+                Scene dashboard = new Scene(root);
+                Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                window.setScene(dashboard);
+            }
+            catch (Exception e){
+                System.out.println(e);
+            }
         }));
     }
 

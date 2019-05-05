@@ -3,9 +3,14 @@ package utp;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -37,6 +42,10 @@ public class UserController {
     private Label infoLabel;
     @FXML
     private TableView<UserSignedEvents> tableSignedEvents = new TableView<>();
+    @FXML
+    private Button logoutButton;
+    @FXML
+    private Tab yourSigns;
 
     private TableColumn<UserSignedEvents,String> columnEventName = new TableColumn<>("Name");
     private TableColumn<UserSignedEvents,String> columnEventAgend = new TableColumn<>("Agend");
@@ -176,6 +185,22 @@ public class UserController {
         }));
         signButton.setOnAction((event -> {
             signForEvent();
+        }));
+        logoutButton.setOnAction((event -> {
+            try{
+                FXMLLoader fxmlLoader = new FXMLLoader();
+                fxmlLoader.setLocation(getClass().getResource("mainview.fxml"));
+                Parent root = fxmlLoader.load();
+                Scene dashboard = new Scene(root);
+                Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                window.setScene(dashboard);
+            }
+            catch (Exception e){
+                System.out.println(e);
+            }
+        }));
+        yourSigns.setOnSelectionChanged((event -> {
+            getUserSignedEvents(loggedUser);
         }));
     }
 

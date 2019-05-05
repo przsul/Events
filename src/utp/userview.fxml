@@ -28,10 +28,11 @@
                   <TextField fx:id="date" editable="false" layoutX="465.0" layoutY="48.0" prefHeight="31.0" prefWidth="190.0" />
                   <Label fx:id="dateLabel" layoutX="465.0" layoutY="27.0" prefHeight="21.0" prefWidth="190.0" text="Data wydarzenia:" />
                   <Label fx:id="infoLabel" layoutX="606.0" layoutY="306.0" prefHeight="21.0" prefWidth="409.0" text="INFO: " />
+                  <Button fx:id="logoutButton" layoutX="896.0" layoutY="248.0" mnemonicParsing="false" text="Wyloguj" />
                </children></AnchorPane>
       </content>
     </Tab>
-    <Tab text="Twoje zapisy">
+    <Tab fx:id="yourSigns" text="Twoje zapisy">
       <content>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                <children>

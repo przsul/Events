@@ -15,6 +15,7 @@
                   <TableView fx:id="tableEvents" layoutX="14.0" layoutY="24.0" prefHeight="200.0" prefWidth="673.0" />
                   <Button fx:id="eventAdd" layoutX="14.0" layoutY="258.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="142.0" text="Dodaj" />
                   <Button fx:id="eventDelete" layoutX="533.0" layoutY="258.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="150.0" text="Usuń" />
+                  <Button fx:id="logoutButton" layoutX="318.0" layoutY="316.0" mnemonicParsing="false" text="Wyloguj" />
                </children></AnchorPane>
       </content>
     </Tab>
