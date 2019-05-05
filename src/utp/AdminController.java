@@ -45,6 +45,8 @@ public class AdminController {
     private Button signedAccept;
     @FXML
     private Button logoutButton;
+    @FXML
+    private Button resetPasswordButton;
 
     private TableColumn<User,Long> columnId = new TableColumn<>("Id");
     private TableColumn<User,String> columnLogin = new TableColumn<>("Login");
@@ -79,6 +81,12 @@ public class AdminController {
     private ObservableList<User> data = FXCollections.observableArrayList();
     private ObservableList<Event> eventData = FXCollections.observableArrayList();
     private ObservableList<EventSign> eventSignData = FXCollections.observableArrayList();
+    private EmailSender emailSender = new EmailSender();
+    private PasswordGenerator passwordGenerator = new PasswordGenerator.PasswordGeneratorBuilder()
+            .useDigits(true)
+            .useLower(true)
+            .useUpper(true)
+            .build();
 
     private void sendUpdateUserQueryCell(String table,String string, String parameter, Long id){
         try {
@@ -87,6 +95,17 @@ public class AdminController {
             if(table.equals("events") && string.equals("time")) preparedStatement.setTimestamp(1,
                     Timestamp.valueOf(LocalDateTime.parse(parameter,formatter)));
             else preparedStatement.setString(1,parameter);
+            preparedStatement.setLong(2,id);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    private void sendUpdateUserPasswordQueryCell(String parameter, Long id){
+        try {
+            sql = "UPDATE users SET password = MD5(?) WHERE id = ?";
+            preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.setString(1,parameter);
             preparedStatement.setLong(2,id);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -368,14 +387,19 @@ public class AdminController {
             eventData.remove(eventToDelete);
         });
         signedAccept.setOnAction((event -> {
-            setEventSignedStatus("Potwierdzone", tableSigned.getSelectionModel().getSelectedItem().getUser(),
-                    tableSigned.getSelectionModel().getSelectedItem().getEvent());
-            reloadTableSignedEvent();
+            if(tableSigned.getSelectionModel().getSelectedItem() != null){
+                setEventSignedStatus("Potwierdzone", tableSigned.getSelectionModel().getSelectedItem().getUser(),
+                        tableSigned.getSelectionModel().getSelectedItem().getEvent());
+                reloadTableSignedEvent();
+            }
         }));
         signedDecline.setOnAction((event -> {
-            setEventSignedStatus("Odrzucone", tableSigned.getSelectionModel().getSelectedItem().getUser(),
-                    tableSigned.getSelectionModel().getSelectedItem().getEvent());
-            reloadTableSignedEvent();
+            if(tableSigned.getSelectionModel().getSelectedItem() != null)
+            {
+                setEventSignedStatus("Odrzucone", tableSigned.getSelectionModel().getSelectedItem().getUser(),
+                        tableSigned.getSelectionModel().getSelectedItem().getEvent());
+                reloadTableSignedEvent();
+            }
         }));
         logoutButton.setOnAction((event -> {
             try{
@@ -390,6 +414,23 @@ public class AdminController {
                 System.out.println(e);
             }
         }));
+        resetPasswordButton.setOnAction((event) -> {
+            if(tableUsers.getSelectionModel().getSelectedItem() != null){
+                String newPassword = passwordGenerator.generate(8);
+                User selectedUser = tableUsers.getSelectionModel().getSelectedItem();
+                sendUpdateUserPasswordQueryCell(newPassword,selectedUser.getUserId());
+                reloadTableUser();
+                new Thread(() -> {
+                    try{
+                        emailSender.sendAsHtml(selectedUser.getUserEmail(),"Nowe haslo","Twoje nowe haslo to: " + newPassword);
+                    }
+                    catch(Exception e){
+                        System.out.println(e);
+                    }
+                }).start();
+
+            }
+        });
     }
 
 }

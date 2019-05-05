@@ -26,6 +26,7 @@
                   <TableView fx:id="tableUsers" editable="true" layoutX="16.0" layoutY="9.0" prefHeight="222.0" prefWidth="671.0" />
                   <Button fx:id="userAdd" layoutX="16.0" layoutY="244.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="148.0" text="Dodaj" />
                   <Button fx:id="userDelete" layoutX="508.0" layoutY="244.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="158.0" text="Usuń" />
+                  <Button fx:id="resetPasswordButton" layoutX="239.0" layoutY="244.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="197.0" text="Reset hasła" />
                </children></AnchorPane>
       </content>
     </Tab>

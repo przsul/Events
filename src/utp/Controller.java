@@ -130,7 +130,7 @@ public class Controller {
                         {
                             sql = "INSERT INTO users (login, password, firstname, lastname, email, type)" +
                                     "VALUES (?, md5(?), ?, ?, ?, ?)";
-                            PreparedStatement preparedStatement = conn.prepareStatement(sql) ;
+                            PreparedStatement preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
                             preparedStatement.setString(1,registerLoginText.getText());
                             preparedStatement.setString(2,registerPasswordText.getText());
                             preparedStatement.setString(3,firstNameText.getText());
@@ -138,8 +138,27 @@ public class Controller {
                             preparedStatement.setString(5,emailText.getText());
                             preparedStatement.setString(6,"U");
                             preparedStatement.executeUpdate();
-                            AnchorPane pane2 = FXMLLoader.load(getClass().getResource("userview.fxml"));
-                            rootGridPane.getChildren().setAll(pane2);
+                            resultSet = preparedStatement.getGeneratedKeys();
+                            if(resultSet.next()){
+                                User newUserLogged = new User(
+                                        resultSet.getLong(1),
+                                        registerLoginText.getText(),
+                                        registerPasswordText.getText(),
+                                        firstNameText.getText(),
+                                        lastNameText.getText(),
+                                        emailText.getText(),
+                                        "U"
+                                );
+                                FXMLLoader fxmlLoader = new FXMLLoader();
+                                fxmlLoader.setLocation(getClass().getResource("userview.fxml"));
+                                UserController userController = new UserController();
+                                userController.setLoggedUser(newUserLogged);
+                                fxmlLoader.setController(userController);
+                                Parent root = fxmlLoader.load();
+                                Scene dashboard = new Scene(root);
+                                Stage window = (Stage)((Node)e.getSource()).getScene().getWindow();
+                                window.setScene(dashboard);
+                            }
                         }
                         else{
                             registerInfoText.appendText("Blad: Podany uzytkownik juz istnieje\n");
