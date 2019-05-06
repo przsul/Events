@@ -27,7 +27,7 @@ public class EmailSender {
     private void prepareEmailMessage(MimeMessage message, String to, String title, String html)
             throws MessagingException, UnsupportedEncodingException {
         message.setContent(html, "text/html");
-        message.setFrom(new InternetAddress(senderEmail, "LAB4 - Registration"));
+        message.setFrom(new InternetAddress(senderEmail, "LAB5 - Nowe haslo"));
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
         message.setSubject(title);
     }
