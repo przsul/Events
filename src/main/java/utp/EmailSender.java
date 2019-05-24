@@ -13,7 +13,7 @@ import javax.mail.internet.MimeMessage;
 
 public class EmailSender {
     private final String senderEmail = "jankowal-lab4@wp.pl";
-    private final String senderPassword = "Jankowal123!@#";
+    private final String senderPassword = "jankowal123!@#";
 
     public void sendAsHtml(String to, String title, String html) throws MessagingException, UnsupportedEncodingException {
         Session session = createSession();
