@@ -1,10 +1,38 @@
 package utp;
 
+import java.io.Serializable;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
-public class Event {
-    private long eventId;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+@Entity
+@Table(name = "events")
+public class Event implements Serializable {
+
+	@Transient
+	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", unique = true)
+	private long eventId;
+	
+	@Column(name = "name", nullable = false)
     private String name;
+	
+	@Column(name = "agend", nullable = false)
     private String agend;
+	
+	@Column(name = "time", nullable = false)
     private String time;
 
     public Event() {
@@ -46,6 +74,7 @@ public class Event {
     }
 
     public void setTime(String time) {
+    	Timestamp.valueOf(LocalDateTime.parse(time,formatter));
         this.time = time;
     }
 

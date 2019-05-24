@@ -1,14 +1,44 @@
 package utp;
 
-import javax.management.relation.Role;
+import java.io.Serializable;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
-public class User {
-    private long userId;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.xml.bind.DatatypeConverter;
+
+@Entity
+@Table(name = "users")
+public class User implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", unique = true)
+	private long userId;
+	
+	@Column(name = "password", nullable = false)
     private String userPassword;
+	
+	@Column(name = "login", nullable = false)
     private String userLogin;
+	
+	@Column(name = "firstname", nullable = false)
     private String userFirstName;
+	
+	@Column(name = "lastname", nullable = false)
     private String userLastName;
+	
+	@Column(name = "email", nullable = false)
     private String userEmail;
+	
+	@Column(name = "type", nullable = false)
     private String userAccountType;
 
     public User() {
@@ -36,8 +66,15 @@ public class User {
         return userPassword;
     }
 
-    public void setUserPassword(String userPassword) {
-        this.userPassword = userPassword;
+    public void setUserPassword(String userPassword) throws NoSuchAlgorithmException {
+    	MessageDigest md = MessageDigest.getInstance("MD5");
+    	
+    	md.update(userPassword.getBytes());
+    	
+    	byte[] digest = md.digest();
+    	String hash = DatatypeConverter.printHexBinary(digest).toLowerCase();
+    	
+        this.userPassword = hash;
     }
 
     public String getUserLogin() {

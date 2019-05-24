@@ -1,10 +1,19 @@
 package utp;
 
-public class EventSign {
-    private User user;
+import java.io.Serializable;
+
+public class EventSign implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
+		
+	private User user;
+	
     private Event event;
+
     private String type;
+	
     private String food;
+	
     private String status;
 
     public EventSign() {
